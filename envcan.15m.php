@@ -17,19 +17,31 @@ $xml = $weather_object;
 $current_conditions = '';
 
 foreach ($xml->entry as $weather) {
-        if ( str_starts_with( $weather->title, 'SPECIAL') ) {
+    if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
+        if ( !str_contains( $current_conditions,'⚠' ) ) {
             $current_conditions .= "⚠ ";
+        };
+    }
+    else if ( str_starts_with( $weather->title, 'Current Conditions: ') ) {
+        $current_conditions .= trim($weather->title, "Current Conditions: ") . "\n---\n";
+        // get link for full weather for click link
+        foreach( $weather->link->attributes() as $name => $value ) {
+            if ( $name = 'href' ) {
+                $ec_link = $value;
+            }
         }
-        else if ( str_starts_with( $weather->title, 'Current Conditions: ') ) {
-            $current_conditions .= trim($weather->title, "Current Conditions: ") . "\n";
-        }
-        else if ( ( str_starts_with( $weather->title, 'Sunday') ) OR ( str_starts_with( $weather->title, 'Monday') ) OR ( str_starts_with( $weather->title, 'Tuesday') ) OR ( str_starts_with( $weather->title, 'Wednesday') ) OR ( str_starts_with( $weather->title, 'Thursday') ) OR ( str_starts_with( $weather->title, 'Friday') ) OR ( str_starts_with( $weather->title, 'Saturday') ) ) {
-           echo "\n---\n";
-           $current_conditions .=  $weather->title . "\n";
-        }
-        else {
-            $current_conditions .=  $weather->title . "\n";
-        }
+        
+    }
+    else if ( ( str_starts_with( $weather->title, 'Sunday') ) OR ( str_starts_with( $weather->title, 'Monday') ) OR ( str_starts_with( $weather->title, 'Tuesday') ) OR ( str_starts_with( $weather->title, 'Wednesday') ) OR ( str_starts_with( $weather->title, 'Thursday') ) OR ( str_starts_with( $weather->title, 'Friday') ) OR ( str_starts_with( $weather->title, 'Saturday') ) ) {
+        $current_conditions .=  $weather->title . "\n";
+    }
+    else {
+        // what's left
+        $current_conditions .=  $weather->title . "\n";
+
+    }
 }
 
+
 echo $current_conditions;
+echo "Click to view full details | href=" . $ec_link . " | color=blue ";
