@@ -24,7 +24,8 @@ foreach ($xml->entry as $weather) {
             $current_conditions .= trim($weather->title, "Current Conditions: ") . "\n";
         }
         else if ( ( str_starts_with( $weather->title, 'Sunday') ) OR ( str_starts_with( $weather->title, 'Monday') ) OR ( str_starts_with( $weather->title, 'Tuesday') ) OR ( str_starts_with( $weather->title, 'Wednesday') ) OR ( str_starts_with( $weather->title, 'Thursday') ) OR ( str_starts_with( $weather->title, 'Friday') ) OR ( str_starts_with( $weather->title, 'Saturday') ) ) {
-            // $current_conditions .=  $weather->title . "\n";
+           echo "\n---\n";
+           $current_conditions .=  $weather->title . "\n";
         }
         else {
             $current_conditions .=  $weather->title . "\n";
