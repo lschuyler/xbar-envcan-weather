@@ -19,7 +19,7 @@ $current_conditions = '';
 foreach ($xml->entry as $weather) {
     if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
         if ( !str_contains( $current_conditions,'⚠' ) ) {
-            $current_conditions .= "⚠ ";
+            $current_conditions .= "⚠ ". $weather->title . " - ";
         };
     }
     else if ( str_starts_with( $weather->title, 'Current Conditions: ') ) {
