@@ -5,22 +5,31 @@
 #  <xbar.version>v1.0</xbar.version>
 #  <xbar.author>Lisa Schuyler</xbar.author>
 #  <xbar.author.github>lschuyler</xbar.author.github>
-#  <xbar.desc>Displays the weather from Environment Canada for your location.</xbar.desc>
+#  <xbar.desc>Displays the weather from Environment Canada for your specified Canadian location.</xbar.desc>
 #  <xbar.dependencies>php</xbar.dependencies>
 
 $ec_url = 'https://weather.gc.ca/rss/city/yt-6_e.xml';
-$xml_data = file_get_contents($ec_url);
+$xml_data = file_get_contents( $ec_url );
 
-$weather_object = new SimpleXMLElement($xml_data);
-
-$xml = $weather_object;
 $current_conditions = '';
+
+// check for file failure
+if ($xml_data === false) {
+    $current_conditions = 'Error retrieving data';
+}
+else {
+    $xml = new SimpleXMLElement( $xml_data );
+}
 
 foreach ($xml->entry as $weather) {
     if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
+        // add notification for just the first alert
         if ( !str_contains( $current_conditions,'⚠' ) ) {
             $current_conditions .= "⚠ ". $weather->title . " - ";
         };
+    }
+    else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
+        // do nothing with this entry
     }
     else if ( str_starts_with( $weather->title, 'Current Conditions: ') ) {
         $current_conditions .= trim($weather->title, "Current Conditions: ") . "\n---\n";
