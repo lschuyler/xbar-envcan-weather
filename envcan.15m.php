@@ -40,7 +40,7 @@ foreach ($xml->entry as $weather) {
         // add notification for just the first alert
         if ( !str_contains( $current_conditions,'⚠' ) ) {
             $current_conditions .= "⚠ ". $weather->title . " - ";
-        };
+        }
     }
     else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
         // do nothing with this entry
