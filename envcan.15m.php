@@ -8,6 +8,20 @@
 #  <xbar.desc>Displays the weather from Environment Canada for your specified Canadian location.</xbar.desc>
 #  <xbar.dependencies>php</xbar.dependencies>
 
+// add support for PHP < 8
+if ( !function_exists('str_starts_with' ) ) {
+    function str_starts_with($haystack, $needle) {
+        return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
+    }
+}
+
+// add support for PHP < 8
+if ( !function_exists('str_contains' ) ) {
+    function str_contains($haystack, $needle) {
+        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+    }
+}
+
 $ec_url = 'https://weather.gc.ca/rss/city/yt-6_e.xml';
 $xml_data = file_get_contents( $ec_url );
 
