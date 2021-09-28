@@ -45,20 +45,24 @@ foreach ($xml->entry as $weather) {
     else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
         // do nothing with this entry
     }
-    else if ( str_starts_with( $weather->title, 'Current Conditions: ') ) {
-        $current_conditions .= trim($weather->title, "Current Conditions: ") . "\n---\n";
+    else if ( str_starts_with( $weather->title, 'Current Conditions:') ) {
+        $current_conditions .= str_replace("Current Conditions: ", '', $weather->title) . "\n---\n";
         // get link for full weather for click link
         if ( !isset ( $ec_link ) ) {
             foreach( $weather->link->attributes() as $name => $value ) {
                 if ( $name = 'href' ) {
                     $ec_link = $value;
                 }
-            }  
+            }
         }
     }
     else {
         $current_conditions .=  $weather->title . "\n";
     }
+}
+
+if (!$ec_link) {
+    $ec_link = $ec_url;
 }
 
 echo $current_conditions;
