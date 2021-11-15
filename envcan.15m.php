@@ -1,69 +1,86 @@
 #!/usr/local/bin/php
 <?php
 
-#  <xbar.title>Environment Canada weather</xbar.title>
-#  <xbar.version>v1.0</xbar.version>
-#  <xbar.author>Lisa Schuyler</xbar.author>
-#  <xbar.author.github>lschuyler</xbar.author.github>
-#  <xbar.desc>Displays the weather from Environment Canada for your specified Canadian location.</xbar.desc>
-#  <xbar.dependencies>php</xbar.dependencies>
+	#  <xbar.title>Environment Canada weather</xbar.title>
+	#  <xbar.version>v1.0</xbar.version>
+	#  <xbar.author>Lisa Schuyler</xbar.author>
+	#  <xbar.author.github>lschuyler</xbar.author.github>
+	#  <xbar.desc>Displays the weather from Environment Canada for your specified Canadian location.</xbar.desc>
+	#  <xbar.dependencies>php</xbar.dependencies>
 
-// add support for PHP < 8
-if ( !function_exists('str_starts_with' ) ) {
-    function str_starts_with($haystack, $needle) {
-        return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
-    }
-}
+	// xbar variables
+	#  <xbar.var>select(VAR_LANGUAGE="English"): Language. [English, French]</xbar.var>
+	#  <xbar.var>string(VAR_REGION="Region Code"): Region Code (example YT-6).</xbar.var>
 
-// add support for PHP < 8
-if ( !function_exists('str_contains' ) ) {
-    function str_contains($haystack, $needle) {
-        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
-    }
-}
+	// let's get the user preferences:
+	$json_vars = file_get_contents(__FILE__.".vars.json");
+	$vars_array = json_decode($json_vars, true);
+	$language = $vars_array['VAR_LANGUAGE'];
+	$region = $vars_array['VAR_REGION'];
 
-$ec_url = 'https://weather.gc.ca/rss/city/yt-6_e.xml';
-$xml_data = file_get_contents( $ec_url );
+	if ( $language = "English" ) {
+		$lang_short = "e";
+	} else if ( $language = "French" ) {
+		$lang_short = "f";
+	}
 
-$current_conditions = '';
 
-// check for file failure
-if ($xml_data === false) {
-    $current_conditions = 'Error retrieving data';
-}
-else {
-    $xml = new SimpleXMLElement( $xml_data );
-}
+	// add support for PHP < 8
+	if ( !function_exists('str_starts_with' ) ) {
+		function str_starts_with($haystack, $needle) {
+			return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
+		}
+	}
 
-foreach ($xml->entry as $weather) {
-    if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
-        // add notification for just the first alert
-        if ( !str_contains( $current_conditions,'⚠' ) ) {
-            $current_conditions .= "⚠ ". $weather->title . " - ";
-        }
-    }
-    else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
-        // do nothing with this entry
-    }
-    else if ( str_starts_with( $weather->title, 'Current Conditions:') ) {
-        $current_conditions .= str_replace("Current Conditions: ", '', $weather->title) . "\n---\n";
-        // get link for full weather for click link
-        if ( !isset ( $ec_link ) ) {
-            foreach( $weather->link->attributes() as $name => $value ) {
-                if ( $name = 'href' ) {
-                    $ec_link = $value;
-                }
-            }
-        }
-    }
-    else {
-        $current_conditions .=  $weather->title . "\n";
-    }
-}
+	// add support for PHP < 8
+	if ( !function_exists('str_contains' ) ) {
+		function str_contains($haystack, $needle) {
+			return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+		}
+	}
 
-if (!$ec_link) {
-    $ec_link = $ec_url;
-}
+	$ec_url = 'https://weather.gc.ca/rss/city/'. strtolower($region) .'_' . $lang_short . '.xml';
+	$xml_data = @file_get_contents( $ec_url );
 
-echo $current_conditions;
-echo "Click for full forecast & details | href=" . $ec_link . " | color=blue ";
+	$current_conditions = '';
+
+	// check for file failure
+	if ($xml_data === FALSE) {
+		exit('Error retrieving data - check region code.');
+	}
+	else {
+		$xml = new SimpleXMLElement( $xml_data );
+	}
+
+	foreach ($xml->entry as $weather) {
+		if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
+			// add notification for just the first alert
+			if ( !str_contains( $current_conditions,'⚠' ) ) {
+				$current_conditions .= "⚠ ". $weather->title . " - ";
+			}
+		}
+		else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
+			// do nothing with this entry
+		}
+		else if ( str_starts_with( $weather->title, 'Current Conditions:') ) {
+			$current_conditions .= str_replace("Current Conditions: ", '', $weather->title) . "\n---\n";
+			// get link for full weather for click link
+			if ( !isset ( $ec_link ) ) {
+				foreach( $weather->link->attributes() as $name => $value ) {
+					if ( $name = 'href' ) {
+						$ec_link = $value;
+					}
+				}
+			}
+		}
+		else {
+			$current_conditions .=  $weather->title . "\n";
+		}
+	}
+
+	if (!$ec_link) {
+		$ec_link = $ec_url;
+	}
+
+	echo $current_conditions;
+	echo "Click for full forecast & details | href=" . $ec_link . " | color=blue ";
