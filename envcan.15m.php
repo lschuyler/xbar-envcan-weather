@@ -21,7 +21,7 @@
 	if ( $language = "English" ) {
 		$lang_short = "e";
 		$envcan_url = "weather";
-	} else if ( $language = "French" ) {
+	} elseif ( $language = "French" ) {
 		$lang_short = "f";
 		$envcan_url = "mateo";
 	}
@@ -63,10 +63,10 @@
 				$current_conditions .= "⚠ ". $weather->title . " - ";
 			}
 		}
-		else if ( ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) OR ( str_starts_with( $weather->title, 'Aucune veille ou alerte en vigueur' ) ) ) {
+		elseif ( ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) OR ( str_starts_with( $weather->title, 'Aucune veille ou alerte en vigueur' ) ) ) {
 			// do nothing with this entry
 		}
-		else if ( ( str_starts_with( $weather->title, 'Current Conditions:') ) OR ( str_starts_with( $weather->title, 'Conditions actuelles:') ) ) {
+		elseif ( ( str_starts_with( $weather->title, 'Current Conditions:') ) OR ( str_starts_with( $weather->title, 'Conditions actuelles:') ) ) {
 			if ( $language = "English" ) {
 				$current_conditions .= str_replace("Current Conditions: ", '', $weather->title);
 			}
