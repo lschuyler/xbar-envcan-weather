@@ -13,6 +13,20 @@ For use with the xbar app - https://xbarapp.com/
 
 # Environment Canda Regional Codes
 
+[Alberta](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#alberta)
+[British Columbia](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#british-columbia)
+[Manitoba](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#manitoba)
+[New Brunswick](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#new-brunswick)
+[Newfoundland and Labrador](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#newfoundland-and-labrador)
+[Northwest Territories](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#northwest-territories)
+[Nova Scotia](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#nova-scotia)
+[Nunavut](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#nunavut)
+[Ontario](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#ontario)
+[Prince Edward Island](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#prince-edward-island)
+[Quebec](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#quebec)
+[Saskatchewan](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#saskatchewan)
+[Yukon](https://github.com/lschuyler/xbar-envcan-weather/blob/master/README.md#yukon)
+
 ## ALBERTA
 * Airdrie -> AB-12
 * Athabasca -> AB-10
