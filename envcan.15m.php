@@ -20,8 +20,10 @@
 
 	if ( $language = "English" ) {
 		$lang_short = "e";
+		$envcan_url = "weather";
 	} else if ( $language = "French" ) {
 		$lang_short = "f";
+		$envcan_url = "mateo";
 	}
 
 
@@ -39,7 +41,7 @@
 		}
 	}
 
-	$ec_url = 'https://weather.gc.ca/rss/city/'. strtolower($region) .'_' . $lang_short . '.xml';
+	$ec_url = 'https://'. $envcan_url .'.gc.ca/rss/city/'. strtolower($region) .'_' . $lang_short . '.xml';
 	$xml_data = @file_get_contents( $ec_url );
 
 	$current_conditions = '';
@@ -53,17 +55,25 @@
 	}
 
 	foreach ($xml->entry as $weather) {
-		if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'WATCH') )) {
+		if ( ( str_starts_with( $weather->title, 'SPECIAL') ) OR ( str_starts_with( $weather->title, 'SPÉCIAL') ) OR
+		     ( str_contains( $weather->title, 'WARNING') )  OR ( str_contains( $weather->title, 'ATTENTION') ) OR
+		     ( str_contains( $weather->title, 'WATCH') ) OR ( str_contains( $weather->title, 'ALERTE') )) {
 			// add notification for just the first alert
 			if ( !str_contains( $current_conditions,'⚠' ) ) {
 				$current_conditions .= "⚠ ". $weather->title . " - ";
 			}
 		}
-		else if ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) {
+		else if ( ( str_starts_with( $weather->title, 'No watches or warnings in effect' ) ) OR ( str_starts_with( $weather->title, 'Aucune veille ou alerte en vigueur' ) ) ) {
 			// do nothing with this entry
 		}
-		else if ( str_starts_with( $weather->title, 'Current Conditions:') ) {
-			$current_conditions .= str_replace("Current Conditions: ", '', $weather->title) . "\n---\n";
+		else if ( ( str_starts_with( $weather->title, 'Current Conditions:') ) OR ( str_starts_with( $weather->title, 'Conditions actuelles:') ) ) {
+			if ( $language = "English" ) {
+				$current_conditions .= str_replace("Current Conditions: ", '', $weather->title);
+			}
+            elseif ( $language = "French" ) {
+				$current_conditions .= str_replace("Conditions actuelles: ", '', $weather->title);
+			}
+			$current_conditions .= "\n---\n";
 			// get link for full weather for click link
 			if ( !isset ( $ec_link ) ) {
 				foreach( $weather->link->attributes() as $name => $value ) {
