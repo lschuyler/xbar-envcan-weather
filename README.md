@@ -10,6 +10,7 @@ For use with the xbar app - https://xbarapp.com/
 3. Make sure the PHP path matches yours (a `which php` command in terminal is a quick check). 
 4. Make the file executable.
 5. On the settings page, you'll be prompted for a region code. You can find them listed below.
+6. Also on the settings page, set your preferences for weather icons (colour, plain, or none), and language (English or French).
 
 # Environment Canda Regional Codes
 
