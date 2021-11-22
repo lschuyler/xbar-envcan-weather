@@ -18,9 +18,14 @@
 	$vars_array = json_decode( $json_vars, true );
 	$user_pref  = array(
 		"language" => $vars_array['VAR_LANGUAGE'],
-		"region"   => $vars_array['VAR_REGION'],
+		"region"   => strip_tags( $vars_array['VAR_REGION'] ),
 		"icons"    => $vars_array['VAR_ICONS']
 	);
+
+	// region code should never be more than 6 characters:
+	if ( strlen( $user_pref['region'] ) > 6 ) {
+		$user_pref['region'] = substr( $user_pref['region'], 0, 6 );
+	}
 
 	if ( $user_pref['language'] == "English" ) {
 		$lang_short = "e";
