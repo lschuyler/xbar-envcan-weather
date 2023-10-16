@@ -120,7 +120,7 @@ if ( $user_pref['language'] == "English" ) {
 	foreach ( $xml->entry as $weather ) {
 		if ( $weather->category['term'] == "Warnings and Watches" ) {
 			if ( $weather->summary != "No watches or warnings in effect." ) {
-				$current_conditions .= "⚠ " . strtok( $weather->title, ',' );
+				$current_conditions .= "⚠ " . strtok( $weather->title, ',' ) . " ";
 			}
 
 		} elseif ( $weather->category['term'] == "Current Conditions" ) {
@@ -142,7 +142,7 @@ if ( $user_pref['language'] == "English" ) {
 	foreach ( $xml->entry as $weather ) {
 		if ( $weather->category['term'] == "Veilles et avertissements" ) {
 			if ( $weather->summary != "Aucune veille ou alerte en vigueur." ) {
-				$current_conditions .= "⚠ " . $weather->summary . "\n";
+				$current_conditions .= "⚠ " . strtok( $weather->title, ',' ) . " ";
 			}
 
 		} elseif ( $weather->category['term'] == "Conditions actuelles" ) {
