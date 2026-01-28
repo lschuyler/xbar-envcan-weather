@@ -2,7 +2,61 @@
 <?php
 
 #  <xbar.title>Environment Canada weather</xbar.title>
-#  <xbar.version>v1.0</xbar.version>
+#  <xbar.version>v2.1</xbar.version>
+
+define( 'CURRENT_VERSION', 'v2.1' );
+define( 'GITHUB_RAW_URL', 'https://raw.githubusercontent.com/lschuyler/xbar-envcan-weather/master/envcan.15m.php' );
+define( 'GITHUB_REPO_URL', 'https://github.com/lschuyler/xbar-envcan-weather' );
+
+/**
+ * Check for updates once per day
+ * Returns the latest version if an update is available, false otherwise
+ */
+function check_for_update() {
+	$cache_file = sys_get_temp_dir() . '/envcan-update-check.json';
+	$cache_ttl  = 86400; // 24 hours
+
+	// Check cache first
+	if ( file_exists( $cache_file ) ) {
+		$cache = json_decode( file_get_contents( $cache_file ), true );
+		if ( $cache && isset( $cache['timestamp'] ) && ( time() - $cache['timestamp'] ) < $cache_ttl ) {
+			return $cache['update_available'] ? $cache['latest_version'] : false;
+		}
+	}
+
+	// Fetch latest version from GitHub
+	$context = stream_context_create( array(
+		'http' => array( 'timeout' => 5 )
+	) );
+	$remote_content = @file_get_contents( GITHUB_RAW_URL, false, $context );
+
+	if ( $remote_content === false ) {
+		return false; // Network error, skip update check
+	}
+
+	// Extract version from remote script
+	if ( preg_match( '/<xbar\.version>(v[\d.]+)<\/xbar\.version>/', $remote_content, $matches ) ) {
+		$latest_version = $matches[1];
+		$update_available = version_compare(
+			str_replace( 'v', '', $latest_version ),
+			str_replace( 'v', '', CURRENT_VERSION ),
+			'>'
+		);
+
+		// Cache the result
+		file_put_contents( $cache_file, json_encode( array(
+			'timestamp'        => time(),
+			'latest_version'   => $latest_version,
+			'update_available' => $update_available
+		) ) );
+
+		return $update_available ? $latest_version : false;
+	}
+
+	return false;
+}
+
+$update_available = check_for_update();
 #  <xbar.author>Lisa Schuyler</xbar.author>
 #  <xbar.author.github>lschuyler</xbar.author.github>
 #  <xbar.desc>Displays the weather from Environment Canada for your specified Canadian location.</xbar.desc>
@@ -10,22 +64,40 @@
 
 // xbar variables
 #  <xbar.var>select(VAR_LANGUAGE="English"): Language. [English, French]</xbar.var>
-#  <xbar.var>string(VAR_REGION="YT-6"): Region Code (example YT-6).</xbar.var>
+#  <xbar.var>string(VAR_COORDS="43.643,-79.394"): Coordinates as latitude,longitude (example 43.643,-79.394 for Toronto).</xbar.var>
 #  <xbar.var>select(VAR_ICONS="Plain"): Icons. [Colour, Plain, None]</xbar.var>
 
-// let's get the user preferences:
-$json_vars  = file_get_contents( __FILE__ . ".vars.json" );
-$vars_array = json_decode( $json_vars, true );
+// let's get the user preferences (with defaults if vars file doesn't exist yet):
+$vars_file  = __FILE__ . ".vars.json";
+$vars_array = file_exists( $vars_file ) ? json_decode( file_get_contents( $vars_file ), true ) : array();
+
+// check if user has old region code format and needs to update settings
+if ( isset( $vars_array['VAR_REGION'] ) && ! isset( $vars_array['VAR_COORDS'] ) ) {
+	echo "Update Required\n";
+	echo "---\n";
+	echo "Environment Canada changed their API.\n";
+	echo "Please update your plugin settings:\n";
+	echo "1. Open xbar plugin settings\n";
+	echo "2. Enter your coordinates (lat,lon)\n";
+	echo "3. Example: 43.643,-79.394 for Toronto\n";
+	echo "---\n";
+	echo "Find coordinates at weather.gc.ca | href=https://weather.gc.ca | color=blue\n";
+	exit;
+}
+
 $user_pref  = array(
-	"language" => $vars_array['VAR_LANGUAGE'],
-	"region"   => strip_tags( $vars_array['VAR_REGION'] ),
-	"icons"    => $vars_array['VAR_ICONS']
+	"language" => $vars_array['VAR_LANGUAGE'] ?? "English",
+	"coords"   => strip_tags( $vars_array['VAR_COORDS'] ?? "43.643,-79.394" ),
+	"icons"    => $vars_array['VAR_ICONS'] ?? "Plain"
 );
 
-// region code should never be more than 6 characters:
-if ( strlen( $user_pref['region'] ) > 6 ) {
-	$user_pref['region'] = substr( $user_pref['region'], 0, 6 );
+// parse coordinates - expected format: "lat,lon" (e.g., "43.643,-79.394")
+$coords_parts = explode( ',', $user_pref['coords'] );
+if ( count( $coords_parts ) !== 2 ) {
+	exit( 'Error: Invalid coordinates format. Use latitude,longitude (e.g., 43.643,-79.394)' );
 }
+$latitude  = trim( $coords_parts[0] );
+$longitude = trim( $coords_parts[1] );
 
 if ( $user_pref['language'] == "English" ) {
 	$lang_short = "e";
@@ -102,16 +174,17 @@ function add_icons( $weather_text, $weather_icons ) {
 	return $weather_text;
 }
 
-$ec_url   = 'https://' . $envcan_url . '.gc.ca/rss/city/' . strtolower( $user_pref["region"] ) . '_' . $lang_short . '.xml';
+$ec_url   = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
 $xml_data = @file_get_contents( $ec_url );
 
 $current_conditions = '';
 $observations       = '';
 $forecast           = 'Forecast: \n';
+$ec_link            = '';
 
 // check for file failure
 if ( $xml_data === false ) {
-	exit( 'Error retrieving data - check region code. ' . $ec_url );
+	exit( 'Error retrieving data - check coordinates. ' . $ec_url );
 } else {
 	$xml = new SimpleXMLElement( $xml_data );
 }
@@ -127,7 +200,7 @@ if ( $user_pref['language'] == "English" ) {
 			$current_conditions .= str_replace( "Current Conditions: ", '', add_icons( $weather->title, $weather_icons ) );
 			$observations       .= strip_tags( $weather->summary );
 			// get link for full weather for click link
-			if ( ! isset ( $ec_link ) ) {
+			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
 					if ( $name = 'href' ) {
 						$ec_link = $value;
@@ -149,7 +222,7 @@ if ( $user_pref['language'] == "English" ) {
 			$current_conditions .= str_replace( "Conditions actuelles: ", '', add_icons( $weather->title, $weather_icons ) );
 			$observations       .= strip_tags( $weather->summary );
 			// get link for full weather for click link
-			if ( ! isset ( $ec_link ) ) {
+			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
 					if ( $name = 'href' ) {
 						$ec_link = $value;
@@ -162,9 +235,9 @@ if ( $user_pref['language'] == "English" ) {
 	}
 }
 
-// backup in case the link wasn't set
+// backup in case the link wasn't set - use coordinate-based web URL
 if ( ! $ec_link ) {
-	$ec_link = $ec_url;
+	$ec_link = 'https://' . $envcan_url . '.gc.ca/en/location/index.html?coords=' . $latitude . ',' . $longitude;
 }
 
 $observations = str_replace( "&deg;", "°", $observations );
@@ -172,4 +245,11 @@ echo $current_conditions;
 echo "\n---\n";
 echo $observations . "\n";
 echo $forecast;
-echo $link_text . " | href=" . $ec_link . " | color=blue ";
+echo $link_text . " | href=" . $ec_link . " | color=blue\n";
+
+// Show update notification if available
+if ( $update_available ) {
+	echo "---\n";
+	echo "⬆ Update available: " . $update_available . " | color=orange\n";
+	echo "Download update | href=" . GITHUB_REPO_URL . " | color=blue\n";
+}
