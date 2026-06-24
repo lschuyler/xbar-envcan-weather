@@ -103,14 +103,14 @@ if ( ! is_numeric( $latitude ) || ! is_numeric( $longitude ) ) {
 	exit( 'Error: Coordinates must be numeric values (e.g., 43.643,-79.394)' );
 }
 
-if ( $user_pref['language'] == "English" ) {
-	$lang_short = "e";
-	$envcan_url = "weather";
-	$link_text  = "Click for full forecast & details";
-} elseif ( $user_pref['language'] == "French" ) {
+if ( $user_pref['language'] == "French" ) {
 	$lang_short = "f";
 	$envcan_url = "meteo";
 	$link_text  = "Cliquez pour les prévisions complètes et les détails";
+} else {
+	$lang_short = "e";
+	$envcan_url = "weather";
+	$link_text  = "Click for full forecast & details";
 }
 
 // add support for PHP < 8
