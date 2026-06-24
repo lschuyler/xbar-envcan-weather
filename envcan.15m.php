@@ -2,9 +2,9 @@
 <?php
 
 #  <xbar.title>Environment Canada weather</xbar.title>
-#  <xbar.version>v2.1</xbar.version>
+#  <xbar.version>v2.2</xbar.version>
 
-define( 'CURRENT_VERSION', 'v2.1' );
+define( 'CURRENT_VERSION', 'v2.2' );
 define( 'GITHUB_RAW_URL', 'https://raw.githubusercontent.com/lschuyler/xbar-envcan-weather/master/envcan.15m.php' );
 define( 'GITHUB_REPO_URL', 'https://github.com/lschuyler/xbar-envcan-weather' );
 
