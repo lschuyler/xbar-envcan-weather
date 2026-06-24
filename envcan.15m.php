@@ -249,7 +249,7 @@ echo $current_conditions;
 echo "\n---\n";
 echo $observations . "\n";
 echo $forecast;
-echo $link_text . " | href=" . $ec_link . " | color=blue\n";
+echo $link_text . " | href=" . str_replace( '|', '', $ec_link ) . " | color=blue\n";
 
 // Show update notification if available
 if ( $update_available ) {
