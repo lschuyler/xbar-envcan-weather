@@ -178,8 +178,9 @@ function add_icons( $weather_text, $weather_icons ) {
 	return $weather_text;
 }
 
-$ec_url   = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
-$xml_data = @file_get_contents( $ec_url );
+$ec_url        = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
+$fetch_context = stream_context_create( array( 'http' => array( 'timeout' => 10 ) ) );
+$xml_data      = file_get_contents( $ec_url, false, $fetch_context );
 
 $current_conditions = '';
 $observations       = '';
