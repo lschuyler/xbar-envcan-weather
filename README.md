@@ -54,6 +54,12 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 
 ## Changelog
 
+### v2.2 (June 2026)
+- Fixed link extraction from RSS feed (assignment vs. comparison bug)
+- Fixed undefined variables when an unrecognised language setting is used
+- Added numeric validation for coordinates to prevent malformed URLs
+- Strip pipe characters from feed links to prevent xbar directive injection
+
 ### v2.1 (January 2026)
 - Added automatic update notifications (checks once per day)
 
