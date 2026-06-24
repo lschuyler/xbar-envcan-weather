@@ -28,7 +28,7 @@ function check_for_update() {
 	$context = stream_context_create( array(
 		'http' => array( 'timeout' => 5 )
 	) );
-	$remote_content = @file_get_contents( GITHUB_RAW_URL, false, $context );
+	$remote_content = file_get_contents( GITHUB_RAW_URL, false, $context );
 
 	if ( $remote_content === false ) {
 		return false; // Network error, skip update check
