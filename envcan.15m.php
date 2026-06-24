@@ -183,7 +183,7 @@ $xml_data = @file_get_contents( $ec_url );
 
 $current_conditions = '';
 $observations       = '';
-$forecast           = 'Forecast: \n';
+$forecast           = "Forecast: \n";
 $ec_link            = '';
 
 // check for file failure
