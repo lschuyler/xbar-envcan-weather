@@ -63,6 +63,9 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 - Added 10s timeout to main weather fetch to prevent indefinite blocking
 - Fixed `str_contains` polyfill to match PHP 8 behaviour for empty needle
 - Removed `@` error suppression from network calls
+- Fixed `str_starts_with` polyfill to match PHP 8 behaviour for empty needle
+- Fixed crash when vars file contains malformed JSON
+- Fixed fatal error when Environment Canada returns malformed XML
 
 ### v2.1 (January 2026)
 - Added automatic update notifications (checks once per day)
