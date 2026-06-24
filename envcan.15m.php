@@ -2,9 +2,9 @@
 <?php
 
 #  <xbar.title>Environment Canada weather</xbar.title>
-#  <xbar.version>v2.1</xbar.version>
+#  <xbar.version>v2.2</xbar.version>
 
-define( 'CURRENT_VERSION', 'v2.1' );
+define( 'CURRENT_VERSION', 'v2.2' );
 define( 'GITHUB_RAW_URL', 'https://raw.githubusercontent.com/lschuyler/xbar-envcan-weather/master/envcan.15m.php' );
 define( 'GITHUB_REPO_URL', 'https://github.com/lschuyler/xbar-envcan-weather' );
 
@@ -28,7 +28,7 @@ function check_for_update() {
 	$context = stream_context_create( array(
 		'http' => array( 'timeout' => 5 )
 	) );
-	$remote_content = @file_get_contents( GITHUB_RAW_URL, false, $context );
+	$remote_content = file_get_contents( GITHUB_RAW_URL, false, $context );
 
 	if ( $remote_content === false ) {
 		return false; // Network error, skip update check
@@ -69,7 +69,7 @@ $update_available = check_for_update();
 
 // let's get the user preferences (with defaults if vars file doesn't exist yet):
 $vars_file  = __FILE__ . ".vars.json";
-$vars_array = file_exists( $vars_file ) ? json_decode( file_get_contents( $vars_file ), true ) : array();
+$vars_array = file_exists( $vars_file ) ? ( json_decode( file_get_contents( $vars_file ), true ) ?? array() ) : array();
 
 // check if user has old region code format and needs to update settings
 if ( isset( $vars_array['VAR_REGION'] ) && ! isset( $vars_array['VAR_COORDS'] ) ) {
@@ -99,27 +99,39 @@ if ( count( $coords_parts ) !== 2 ) {
 $latitude  = trim( $coords_parts[0] );
 $longitude = trim( $coords_parts[1] );
 
-if ( $user_pref['language'] == "English" ) {
-	$lang_short = "e";
-	$envcan_url = "weather";
-	$link_text  = "Click for full forecast & details";
-} elseif ( $user_pref['language'] == "French" ) {
+if ( ! is_numeric( $latitude ) || ! is_numeric( $longitude ) ) {
+	exit( 'Error: Coordinates must be numeric values (e.g., 43.643,-79.394)' );
+}
+
+if ( (float) $latitude < -90 || (float) $latitude > 90 ) {
+	exit( 'Error: Latitude must be between -90 and 90' );
+}
+
+if ( (float) $longitude < -180 || (float) $longitude > 180 ) {
+	exit( 'Error: Longitude must be between -180 and 180' );
+}
+
+if ( $user_pref['language'] == "French" ) {
 	$lang_short = "f";
 	$envcan_url = "meteo";
 	$link_text  = "Cliquez pour les prévisions complètes et les détails";
+} else {
+	$lang_short = "e";
+	$envcan_url = "weather";
+	$link_text  = "Click for full forecast & details";
 }
 
 // add support for PHP < 8
 if ( ! function_exists( 'str_starts_with' ) ) {
 	function str_starts_with( $haystack, $needle ) {
-		return (string) $needle !== '' && strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
+		return (string) $needle === '' || strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
 	}
 }
 
 // add support for PHP < 8
 if ( ! function_exists( 'str_contains' ) ) {
 	function str_contains( $haystack, $needle ) {
-		return $needle !== '' && mb_strpos( $haystack, $needle ) !== false;
+		return $needle === '' || mb_strpos( $haystack, $needle ) !== false;
 	}
 }
 
@@ -174,19 +186,24 @@ function add_icons( $weather_text, $weather_icons ) {
 	return $weather_text;
 }
 
-$ec_url   = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
-$xml_data = @file_get_contents( $ec_url );
+$ec_url        = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
+$fetch_context = stream_context_create( array( 'http' => array( 'timeout' => 10 ) ) );
+$xml_data      = file_get_contents( $ec_url, false, $fetch_context );
 
 $current_conditions = '';
 $observations       = '';
-$forecast           = 'Forecast: \n';
+$forecast           = "Forecast: \n";
 $ec_link            = '';
 
 // check for file failure
 if ( $xml_data === false ) {
 	exit( 'Error retrieving data - check coordinates. ' . $ec_url );
-} else {
+}
+
+try {
 	$xml = new SimpleXMLElement( $xml_data );
+} catch ( Exception $e ) {
+	exit( 'Error parsing weather data - Environment Canada may be unavailable.' );
 }
 
 if ( $user_pref['language'] == "English" ) {
@@ -202,7 +219,7 @@ if ( $user_pref['language'] == "English" ) {
 			// get link for full weather for click link
 			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
-					if ( $name = 'href' ) {
+					if ( $name == 'href' ) {
 						$ec_link = $value;
 					}
 				}
@@ -224,7 +241,7 @@ if ( $user_pref['language'] == "English" ) {
 			// get link for full weather for click link
 			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
-					if ( $name = 'href' ) {
+					if ( $name == 'href' ) {
 						$ec_link = $value;
 					}
 				}
@@ -245,7 +262,7 @@ echo $current_conditions;
 echo "\n---\n";
 echo $observations . "\n";
 echo $forecast;
-echo $link_text . " | href=" . $ec_link . " | color=blue\n";
+echo $link_text . " | href=" . str_replace( '|', '', $ec_link ) . " | color=blue\n";
 
 // Show update notification if available
 if ( $update_available ) {

@@ -3,6 +3,14 @@ Environment Canada weather for xbar
 
 For use with the xbar app - https://xbarapp.com/
 
+## Features
+
+- Current conditions and multi-day forecast from Environment Canada
+- Warnings and watches displayed prominently when in effect
+- English and French language support
+- Choice of colour, plain, or no weather icons
+- Automatic daily update notifications when a new version is available
+
 ## Steps to install
 
 1. Install the xbar app
@@ -53,6 +61,20 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 | Yellowknife, NT | 62.454,-114.352 |
 
 ## Changelog
+
+### v2.2 (June 2026)
+- Fixed link extraction from RSS feed (assignment vs. comparison bug)
+- Fixed undefined variables when an unrecognised language setting is used
+- Added numeric validation for coordinates to prevent malformed URLs
+- Added coordinate range validation (latitude -90 to 90, longitude -180 to 180)
+- Strip pipe characters from feed links to prevent xbar directive injection
+- Fixed forecast header displaying literal `\n` instead of a newline
+- Added 10s timeout to main weather fetch to prevent indefinite blocking
+- Fixed `str_contains` polyfill to match PHP 8 behaviour for empty needle
+- Removed `@` error suppression from network calls
+- Fixed `str_starts_with` polyfill to match PHP 8 behaviour for empty needle
+- Fixed crash when vars file contains malformed JSON
+- Fixed fatal error when Environment Canada returns malformed XML
 
 ### v2.1 (January 2026)
 - Added automatic update notifications (checks once per day)
