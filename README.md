@@ -3,6 +3,14 @@ Environment Canada weather for xbar
 
 For use with the xbar app - https://xbarapp.com/
 
+## Features
+
+- Current conditions and multi-day forecast from Environment Canada
+- Warnings and watches displayed prominently when in effect
+- English and French language support
+- Choice of colour, plain, or no weather icons
+- Automatic daily update notifications when a new version is available
+
 ## Steps to install
 
 1. Install the xbar app
