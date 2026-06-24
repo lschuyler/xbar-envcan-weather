@@ -206,7 +206,7 @@ if ( $user_pref['language'] == "English" ) {
 			// get link for full weather for click link
 			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
-					if ( $name = 'href' ) {
+					if ( $name == 'href' ) {
 						$ec_link = $value;
 					}
 				}
@@ -228,7 +228,7 @@ if ( $user_pref['language'] == "English" ) {
 			// get link for full weather for click link
 			if ( ! $ec_link ) {
 				foreach ( $weather->link->attributes() as $name => $value ) {
-					if ( $name = 'href' ) {
+					if ( $name == 'href' ) {
 						$ec_link = $value;
 					}
 				}
