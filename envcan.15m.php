@@ -69,7 +69,7 @@ $update_available = check_for_update();
 
 // let's get the user preferences (with defaults if vars file doesn't exist yet):
 $vars_file  = __FILE__ . ".vars.json";
-$vars_array = file_exists( $vars_file ) ? json_decode( file_get_contents( $vars_file ), true ) : array();
+$vars_array = file_exists( $vars_file ) ? ( json_decode( file_get_contents( $vars_file ), true ) ?? array() ) : array();
 
 // check if user has old region code format and needs to update settings
 if ( isset( $vars_array['VAR_REGION'] ) && ! isset( $vars_array['VAR_COORDS'] ) ) {
