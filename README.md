@@ -59,6 +59,10 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 - Fixed undefined variables when an unrecognised language setting is used
 - Added numeric validation for coordinates to prevent malformed URLs
 - Strip pipe characters from feed links to prevent xbar directive injection
+- Fixed forecast header displaying literal `\n` instead of a newline
+- Added 10s timeout to main weather fetch to prevent indefinite blocking
+- Fixed `str_contains` polyfill to match PHP 8 behaviour for empty needle
+- Removed `@` error suppression from network calls
 
 ### v2.1 (January 2026)
 - Added automatic update notifications (checks once per day)
