@@ -103,6 +103,14 @@ if ( ! is_numeric( $latitude ) || ! is_numeric( $longitude ) ) {
 	exit( 'Error: Coordinates must be numeric values (e.g., 43.643,-79.394)' );
 }
 
+if ( (float) $latitude < -90 || (float) $latitude > 90 ) {
+	exit( 'Error: Latitude must be between -90 and 90' );
+}
+
+if ( (float) $longitude < -180 || (float) $longitude > 180 ) {
+	exit( 'Error: Longitude must be between -180 and 180' );
+}
+
 if ( $user_pref['language'] == "French" ) {
 	$lang_short = "f";
 	$envcan_url = "meteo";
