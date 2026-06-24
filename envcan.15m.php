@@ -99,6 +99,10 @@ if ( count( $coords_parts ) !== 2 ) {
 $latitude  = trim( $coords_parts[0] );
 $longitude = trim( $coords_parts[1] );
 
+if ( ! is_numeric( $latitude ) || ! is_numeric( $longitude ) ) {
+	exit( 'Error: Coordinates must be numeric values (e.g., 43.643,-79.394)' );
+}
+
 if ( $user_pref['language'] == "English" ) {
 	$lang_short = "e";
 	$envcan_url = "weather";
