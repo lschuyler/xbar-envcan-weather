@@ -66,6 +66,7 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 - Fixed link extraction from RSS feed (assignment vs. comparison bug)
 - Fixed undefined variables when an unrecognised language setting is used
 - Added numeric validation for coordinates to prevent malformed URLs
+- Added coordinate range validation (latitude -90 to 90, longitude -180 to 180)
 - Strip pipe characters from feed links to prevent xbar directive injection
 - Fixed forecast header displaying literal `\n` instead of a newline
 - Added 10s timeout to main weather fetch to prevent indefinite blocking
