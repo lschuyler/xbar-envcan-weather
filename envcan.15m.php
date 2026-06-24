@@ -190,8 +190,12 @@ $ec_link            = '';
 // check for file failure
 if ( $xml_data === false ) {
 	exit( 'Error retrieving data - check coordinates. ' . $ec_url );
-} else {
+}
+
+try {
 	$xml = new SimpleXMLElement( $xml_data );
+} catch ( Exception $e ) {
+	exit( 'Error parsing weather data - Environment Canada may be unavailable.' );
 }
 
 if ( $user_pref['language'] == "English" ) {
