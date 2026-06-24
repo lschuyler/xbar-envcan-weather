@@ -116,7 +116,7 @@ if ( $user_pref['language'] == "French" ) {
 // add support for PHP < 8
 if ( ! function_exists( 'str_starts_with' ) ) {
 	function str_starts_with( $haystack, $needle ) {
-		return (string) $needle !== '' && strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
+		return (string) $needle === '' || strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
 	}
 }
 
