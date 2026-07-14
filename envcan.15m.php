@@ -214,12 +214,19 @@ function fetch_url_with_retry( $url, $context, $max_retries = 3, $retry_delay = 
 		if ( $attempt >= $max_retries ) {
 			break;
 		}
-		// $http_response_header is set in the local scope by file_get_contents().
-		// When present, only retry on 5xx (transient server errors).
+		// Retrieve response headers: http_get_last_response_headers() is the
+		// preferred API on PHP 8.4+; fall back to the locally-scoped
+		// $http_response_header for older PHP to avoid a deprecation notice.
+		if ( function_exists( 'http_get_last_response_headers' ) ) {
+			$response_headers = http_get_last_response_headers();
+		} else {
+			$response_headers = $http_response_header ?? null;
+		}
+		// When headers are available, only retry on 5xx (transient server errors).
 		// When absent (network/connection failure), always retry.
-		if ( isset( $http_response_header ) ) {
+		if ( isset( $response_headers ) ) {
 			$is_5xx = false;
-			foreach ( $http_response_header as $header ) {
+			foreach ( $response_headers as $header ) {
 				if ( preg_match( '/^HTTP\/\S+\s+5\d\d/', $header ) ) {
 					$is_5xx = true;
 					break;
