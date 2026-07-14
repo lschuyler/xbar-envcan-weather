@@ -2,9 +2,9 @@
 <?php
 
 #  <xbar.title>Environment Canada weather</xbar.title>
-#  <xbar.version>v2.2</xbar.version>
+#  <xbar.version>v2.3</xbar.version>
 
-define( 'CURRENT_VERSION', 'v2.2' );
+define( 'CURRENT_VERSION', 'v2.3' );
 define( 'GITHUB_RAW_URL', 'https://raw.githubusercontent.com/lschuyler/xbar-envcan-weather/master/envcan.15m.php' );
 define( 'GITHUB_REPO_URL', 'https://github.com/lschuyler/xbar-envcan-weather' );
 
@@ -186,9 +186,64 @@ function add_icons( $weather_text, $weather_icons ) {
 	return $weather_text;
 }
 
+/**
+ * Fetch URL content with retry logic for transient server errors (e.g. 502 Proxy Error).
+ *
+ * Uses @ to suppress PHP warnings so that raw error text never leaks into the
+ * xbar menu bar. Retries only on HTTP 5xx responses or network-level failures
+ * (where no response headers are available); permanent errors such as 4xx are
+ * not retried.
+ *
+ * Note: this function may block for up to ($max_retries - 1) * $retry_delay
+ * seconds before returning false.
+ *
+ * @param string   $url         The URL to fetch.
+ * @param resource $context     A stream context created with stream_context_create().
+ * @param int      $max_retries Maximum number of attempts (default 3).
+ * @param int      $retry_delay Seconds to wait between attempts (default 2).
+ * @return string|false         Response body on success, false when all attempts fail.
+ */
+function fetch_url_with_retry( $url, $context, $max_retries = 3, $retry_delay = 2 ) {
+	for ( $attempt = 1; $attempt <= $max_retries; $attempt++ ) {
+		// @ suppresses the PHP warning that would otherwise appear in the xbar header
+		$data = @file_get_contents( $url, false, $context );
+		if ( $data !== false ) {
+			return $data;
+		}
+		// Skip the sleep after the final attempt — no further retries will occur
+		if ( $attempt >= $max_retries ) {
+			break;
+		}
+		// Retrieve response headers: http_get_last_response_headers() is the
+		// preferred API on PHP 8.4+; fall back to the locally-scoped
+		// $http_response_header for older PHP to avoid a deprecation notice.
+		if ( function_exists( 'http_get_last_response_headers' ) ) {
+			$response_headers = http_get_last_response_headers();
+		} else {
+			$response_headers = $http_response_header ?? null;
+		}
+		// When headers are available, only retry on 5xx (transient server errors).
+		// When absent (network/connection failure), always retry.
+		if ( isset( $response_headers ) ) {
+			$is_5xx = false;
+			foreach ( $response_headers as $header ) {
+				if ( preg_match( '/^HTTP\/\S+\s+5\d\d/', $header ) ) {
+					$is_5xx = true;
+					break;
+				}
+			}
+			if ( ! $is_5xx ) {
+				break; // Non-retryable error (e.g. 404); stop immediately
+			}
+		}
+		sleep( $retry_delay );
+	}
+	return false;
+}
+
 $ec_url        = 'https://' . $envcan_url . '.gc.ca/rss/weather/' . $latitude . '_' . $longitude . '_' . $lang_short . '.xml';
 $fetch_context = stream_context_create( array( 'http' => array( 'timeout' => 10 ) ) );
-$xml_data      = file_get_contents( $ec_url, false, $fetch_context );
+$xml_data      = fetch_url_with_retry( $ec_url, $fetch_context );
 
 $current_conditions = '';
 $observations       = '';
@@ -197,7 +252,11 @@ $ec_link            = '';
 
 // check for file failure
 if ( $xml_data === false ) {
-	exit( 'Error retrieving data - check coordinates. ' . $ec_url );
+	echo "⚠ Weather unavailable\n";
+	echo "---\n";
+	echo "Could not retrieve data from Environment Canada.\n";
+	echo "Tap to retry | refresh=true\n";
+	exit;
 }
 
 try {

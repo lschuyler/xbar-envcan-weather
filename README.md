@@ -62,6 +62,11 @@ Environment Canada now uses coordinates (latitude,longitude) instead of the old 
 
 ## Changelog
 
+### v2.3 (July 2026)
+- Added retry logic for transient Environment Canada feed failures (HTTP 5xx), including `502 Proxy Error`
+- Added a clean xbar fallback message with a manual `Tap to retry` refresh action when fetch attempts fail
+- Fixed PHP 8.4 deprecation warnings by using `http_get_last_response_headers()` when available (with fallback for older PHP versions)
+
 ### v2.2 (June 2026)
 - Fixed link extraction from RSS feed (assignment vs. comparison bug)
 - Fixed undefined variables when an unrecognised language setting is used
